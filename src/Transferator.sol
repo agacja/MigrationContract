@@ -4,12 +4,12 @@ pragma solidity ^0.8.19;
 error SaleClosed();
 error dupa();
 error InsufficientAllowance();
-import "lib/openzeppelin-contracts//contracts/token/ERC721/utils/ERC721Holder.sol";
-import "lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol";
-import "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
-import "lib/solady/src/utils/ECDSA.sol";
-import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
-import "lib/solady/src/utils/SafeTransferLib.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/contracts/interfaces/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "solady/src/utils/ECDSA.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "solady/src/utils/SafeTransferLib.sol";
 
 contract Transferator is Ownable(msg.sender), ERC721Holder{
 
