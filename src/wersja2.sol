@@ -12,7 +12,7 @@ import "solady/src/utils/ECDSA.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
-contract Transferator is Ownable(msg.sender), ERC721Holder {
+contract Transferators is Ownable(msg.sender), ERC721Holder {
     uint8 public saleState;
 
     address public tokeno;
