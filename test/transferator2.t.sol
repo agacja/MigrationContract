@@ -15,7 +15,7 @@ contract Transferator2Test is DSTest {
         transferator2.setSaleState(1);
     }
 
-    function test_TransferERC20() public {
+    function test_TransferTokens() public {
         uint256 amount = 1e18;
         token.approve(address(transferator2), amount);
         transferator2.transferTokens(amount);

