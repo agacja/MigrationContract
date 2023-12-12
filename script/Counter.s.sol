@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {Wersja2} from "../src/Wersja2.sol";
+import {Transferator2} from "../src/Transferator2.sol";
 import "forge-std/console.sol";
-contract Wersja2Script is Script {
+contract Transferator2Script is Script {
     function setUp() public {}
 
     function run() public {

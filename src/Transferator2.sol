@@ -10,7 +10,7 @@ import "solady/src/utils/ECDSA.sol";
 import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
-contract Wersja2 is Owned(msg.sender), ERC721Holder {
+contract Transferator2 is Owned(msg.sender), ERC721Holder {
     uint8 public saleState;
 
     address public tokeno;
