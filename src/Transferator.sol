@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-error SaleClosed();
-error dupa();
-error InsufficientAllowance();
+error TransferClosed();
+
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/interfaces/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -32,7 +31,7 @@ contract Transferator is Owned(msg.sender), ERC721Holder {
         address voult = address(this);
         address user = msg.sender;
         if (saleState != 1) {
-            revert dupa();
+            revert TransferClosed();
         }
 
         assembly {
