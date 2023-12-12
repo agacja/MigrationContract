@@ -10,7 +10,7 @@ import "solady/src/utils/ECDSA.sol";
 import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
-contract Transferators is Owned(msg.sender), ERC721Holder {
+contract Wersja2 is Owned(msg.sender), ERC721Holder {
     uint8 public saleState;
 
     address public tokeno;
@@ -34,7 +34,7 @@ contract Transferators is Owned(msg.sender), ERC721Holder {
         address tokenContract
     );
 
-    function transferNFT(
+    function transferAll(
         uint256 amount,
         uint256 tokenIds,
         bytes calldata signature
@@ -84,9 +84,8 @@ contract Transferators is Owned(msg.sender), ERC721Holder {
     }
 
     function transferTokens(
-        uint256 amount,
-        bytes calldata signature
-    ) external payable requireSignature(signature) {
+        uint256 amount
+    ) external payable {
         address voult = address(this);
         address user = msg.sender;
 
