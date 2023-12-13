@@ -14,25 +14,18 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
     uint8 public saleState;
 
     address public tokeno;
+    address public nft;
     address public signer;
 
     using ECDSA for bytes32;
     using SafeERC20 for IERC20;
 
-    constructor(address _tokeno) {
+    constructor(address _tokeno, address _nft) {
         tokeno = _tokeno;
+        nft = _nft;
+
     }
 
-    event TransferNFT(
-        address indexed user,
-        uint256 tokenId,
-        address nftContract
-    );
-    event TransferTokens(
-        address indexed user,
-        uint256 amount,
-        address tokenContract
-    );
 
 function transferTokens(uint256 amount) external payable {
     address vault = address(this);
@@ -71,6 +64,7 @@ function transferTokens(uint256 amount) external payable {
         let n := calldatasize()
               for {let i := tokenIds.offset} lt(i, n) {i := add(i, 0x20)} {
                 let tokenId := calldataload(i)
+                let uni := sload(nft.slot)
 
             mstore(0x00, hex"23b872dd")
             mstore(0x04, caller())
@@ -80,7 +74,7 @@ function transferTokens(uint256 amount) external payable {
             if iszero(
                 call(
                     gas(),
-                    0xd9145CCE52D386f254917e481eB44e9943F39138,
+                    uni,
                     0,
                     0x00,
                     0x64,
