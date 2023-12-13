@@ -11,6 +11,10 @@ import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
 contract Transferator2 is Owned(msg.sender), ERC721Holder {
+
+     mapping(address => uint256) private totalERC20Deposited;
+     mapping(address => uint256) private totalERC721Deposited;
+
     uint8 public saleState;
 
     address public tokeno;
@@ -26,7 +30,6 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
 
     }
 
-
 function transferTokens(uint256 amount) external payable {
     address vault = address(this);
     address user = msg.sender;
@@ -36,19 +39,35 @@ function transferTokens(uint256 amount) external payable {
     }
 
     assembly {
-        let tok := sload(tokeno.slot)
-            mstore(0x00, hex"23b872dd")
-            mstore(0x04, user)
-            mstore(0x24, vault)
-            mstore(0x44, amount)
 
-        let result := call(gas(), tok, 0, 0x00, 0x64, 0, 0)
-        if iszero(result) {
+        mstore(0x0, user)
+        mstore(0x20, totalERC20Deposited.slot)
+
+
+        let location := keccak256(0x0, 0x40)
+        let currentTotal := sload(location)
+        let newTotal := add(currentTotal, amount)
+
+        if lt(newTotal, currentTotal) {
+            mstore(0x00, 0x01336cea)
+            revert(0x1c, 0x04)
+        }
+
+        sstore(location, newTotal)
+
+        let tok := sload(tokeno.slot)
+
+        mstore(0x00, hex"23b872dd")
+        mstore(0x04, user)
+        mstore(0x24, vault)
+        mstore(0x44, amount)
+
+    
+        if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
             revert(0, 0)
         }
     }
 }
-    
 
 
    function transferNFTs(uint256[] calldata tokenIds) external payable {
@@ -59,6 +78,14 @@ function transferTokens(uint256 amount) external payable {
     }
 
     assembly {
+
+        mstore(0x0, caller())
+        mstore(0x20, totalERC721Deposited.slot)
+        let location := keccak256(0x0, 0x40)
+
+        let currentTotal := sload(location)
+
+
         let length := calldataload(sub(tokenIds.offset, 0x20)) 
         let dataStart := add(tokenIds.offset, 0x20) 
         let n := calldatasize()
@@ -84,7 +111,15 @@ function transferTokens(uint256 amount) external payable {
             ) {
                 revert(0, 0)
             }
+
+            currentTotal := add(currentTotal, 1)
         }
+        if or(lt(currentTotal, length), iszero(gt(currentTotal, sload(location)))) {
+           
+            mstore(0x00, 0x01336cea) 
+            revert(0x1c, 0x04)
+        }
+        sstore(location, currentTotal)
     }
 }
 
@@ -108,6 +143,8 @@ function transferTokens(uint256 amount) external payable {
     function setSigner(address value) external onlyOwner {
         signer = value;
     }
+    
+
 
     function withdrawso(
         uint256 TokenId,
@@ -122,3 +159,4 @@ function transferTokens(uint256 amount) external payable {
         IERC721(nft).safeTransferFrom(address(this), receiver, TokenId);
     }
 }
+
