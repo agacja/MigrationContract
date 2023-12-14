@@ -11,6 +11,8 @@ import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
 contract Transferator2 is Owned(msg.sender), ERC721Holder {
+
+
     uint8 public saleState;
 
     address public tokeno;
@@ -20,14 +22,15 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
     using ECDSA for bytes32;
     using SafeERC20 for IERC20;
 
+    mapping(address => uint256) public totalERC20Deposited;
+    mapping(address => uint256) public totalERC721Deposited;
+
     constructor(address _tokeno, address _nft) {
         tokeno = _tokeno;
         nft = _nft;
     }
 
-    mapping(address => uint256) public totalERC20Deposited;
-    mapping(address => uint256) public totalERC721Deposited;
-
+  
     function transferTokens(uint256 amount) external payable {
         address vault = address(this);
         address user = msg.sender;
