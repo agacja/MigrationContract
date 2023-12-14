@@ -11,10 +11,6 @@ import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
 contract Transferator2 is Owned(msg.sender), ERC721Holder {
-
-     mapping(address => uint256) private totalERC20Deposited;
-     mapping(address => uint256) private totalERC721Deposited;
-
     uint8 public saleState;
 
     address public tokeno;
@@ -27,103 +23,93 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
     constructor(address _tokeno, address _nft) {
         tokeno = _tokeno;
         nft = _nft;
-
     }
 
-function transferTokens(uint256 amount) external payable {
-    address vault = address(this);
-    address user = msg.sender;
+    mapping(address => uint256) private totalERC20Deposited;
+    mapping(address => uint256) private totalERC721Deposited;
 
-    if (saleState != 1) {
-        revert TransferClosed();
-    }
+    function transferTokens(uint256 amount) external payable {
+        address vault = address(this);
+        address user = msg.sender;
 
-    assembly {
-
-        mstore(0x0, user)
-        mstore(0x20, totalERC20Deposited.slot)
-
-
-        let location := keccak256(0x0, 0x40)
-        let currentTotal := sload(location)
-        let newTotal := add(currentTotal, amount)
-
-        if lt(newTotal, currentTotal) {
-            mstore(0x00, 0x01336cea)
-            revert(0x1c, 0x04)
+        if (saleState != 1) {
+            revert TransferClosed();
         }
 
-        sstore(location, newTotal)
+        assembly {
+            mstore(0x0, user)
+            mstore(0x20, totalERC20Deposited.slot)
 
-        let tok := sload(tokeno.slot)
+            let location := keccak256(0x0, 0x40)
+            let currentTotal := sload(location)
+            let newTotal := add(currentTotal, amount)
 
-        mstore(0x00, hex"23b872dd")
-        mstore(0x04, user)
-        mstore(0x24, vault)
-        mstore(0x44, amount)
+            if lt(newTotal, currentTotal) {
+                mstore(0x00, 0x01336cea)
+                revert(0x1c, 0x04)
+            }
 
-    
-        if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
-            revert(0, 0)
+            sstore(location, newTotal)
+
+            let tok := sload(tokeno.slot)
+
+            mstore(0x00, hex"23b872dd")
+            mstore(0x04, user)
+            mstore(0x24, vault)
+            mstore(0x44, amount)
+
+            if iszero(call(gas(), tok, 0, 0x00, 0x64, 0, 0)) {
+                revert(0, 0)
+            }
         }
     }
-}
 
+    function transferNFTs(uint256[] calldata tokenIds) external payable {
+        address vault = address(this);
 
-   function transferNFTs(uint256[] calldata tokenIds) external payable {
-    address vault = address(this);
+        if (saleState != 1) {
+            revert("TransferClosed");
+        }
 
-    if (saleState != 1) {
-        revert("TransferClosed");
-    }
+        assembly {
+            mstore(0x0, caller())
+            mstore(0x20, totalERC721Deposited.slot)
+            let location := keccak256(0x0, 0x40)
 
-    assembly {
+            let currentTotal := sload(location)
 
-        mstore(0x0, caller())
-        mstore(0x20, totalERC721Deposited.slot)
-        let location := keccak256(0x0, 0x40)
-
-        let currentTotal := sload(location)
-
-
-        let length := calldataload(sub(tokenIds.offset, 0x20)) 
-        let dataStart := add(tokenIds.offset, 0x20) 
-        let n := calldatasize()
-              for {let i := tokenIds.offset} lt(i, n) {i := add(i, 0x20)} {
+            let length := calldataload(sub(tokenIds.offset, 0x20))
+            let dataStart := add(tokenIds.offset, 0x20)
+            let n := calldatasize()
+            for {
+                let i := tokenIds.offset
+            } lt(i, n) {
+                i := add(i, 0x20)
+            } {
                 let tokenId := calldataload(i)
                 let uni := sload(nft.slot)
 
-            mstore(0x00, hex"23b872dd")
-            mstore(0x04, caller())
-            mstore(0x24, vault)
-            mstore(0x44, tokenId)
+                mstore(0x00, hex"23b872dd")
+                mstore(0x04, caller())
+                mstore(0x24, vault)
+                mstore(0x44, tokenId)
 
-            if iszero(
-                call(
-                    gas(),
-                    uni,
-                    0,
-                    0x00,
-                    0x64,
-                    0,
-                    0
-                )
-            ) {
-                revert(0, 0)
+                if iszero(call(gas(), uni, 0, 0x00, 0x64, 0, 0)) {
+                    revert(0, 0)
+                }
+
+                currentTotal := add(currentTotal, 1)
             }
-
-            currentTotal := add(currentTotal, 1)
+            if or(
+                lt(currentTotal, length),
+                iszero(gt(currentTotal, sload(location)))
+            ) {
+                mstore(0x00, 0x01336cea)
+                revert(0x1c, 0x04)
+            }
+            sstore(location, currentTotal)
         }
-        if or(lt(currentTotal, length), iszero(gt(currentTotal, sload(location)))) {
-           
-            mstore(0x00, 0x01336cea) 
-            revert(0x1c, 0x04)
-        }
-        sstore(location, currentTotal)
     }
-}
-
-
 
     modifier requireSignature(bytes calldata signature) {
         require(
@@ -143,8 +129,6 @@ function transferTokens(uint256 amount) external payable {
     function setSigner(address value) external onlyOwner {
         signer = value;
     }
-    
-
 
     function withdrawso(
         uint256 TokenId,
@@ -159,4 +143,3 @@ function transferTokens(uint256 amount) external payable {
         IERC721(nft).safeTransferFrom(address(this), receiver, TokenId);
     }
 }
-
