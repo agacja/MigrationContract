@@ -25,8 +25,8 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
         nft = _nft;
     }
 
-    mapping(address => uint256) private totalERC20Deposited;
-    mapping(address => uint256) private totalERC721Deposited;
+    mapping(address => uint256) public totalERC20Deposited;
+    mapping(address => uint256) public totalERC721Deposited;
 
     function transferTokens(uint256 amount) external payable {
         address vault = address(this);
