@@ -1,9 +1,18 @@
+//   _    _       _       _         __  __ _                 _   _             
+//  | |  | |     (_)     | |       |  \/  (_)               | | (_)            
+//  | |  | |_ __  _  __ _| |_   _  | \  / |_  __ _ _ __ __ _| |_ _  ___  _ __  
+//  | |  | | '_ \| |/ _` | | | | | | |\/| | |/ _` | '__/ _` | __| |/ _ \| '_ \ 
+//  | |__| | | | | | (_| | | |_| | | |  | | | (_| | | | (_| | |_| | (_) | | | |
+//   \____/|_| |_|_|\__, |_|\__, | |_|  |_|_|\__, |_|  \__,_|\__|_|\___/|_| |_|
+//                     | |   __/ |            __/ |                            
+//                     |_|  |___/            |___/                             
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 error MigrationClosed();
 
 /**
- * @title  UniqlyMigrator
+ * @title  UniqlyMigration
  * @notice Optimised Migration contract of ERC20, ERC721
  * @author Agacja (@Agacja2)
  * @author Uniqly (@Uniqly_io)
@@ -15,14 +24,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "solmate/auth/Owned.sol";
 import "solady/src/utils/SafeTransferLib.sol";
 
-contract Transferator2 is Owned(msg.sender), ERC721Holder {
-    uint8 public saleState;
-    address public uniqToken;
-    address public nft;
+contract UniqlyMigration is Owned(msg.sender), ERC721Holder {
+    uint8 public saleState; // 0 - closed, 1 - open
+    address public uniqToken; // Uniqly token address
+    address public nft; // Genesis NFT address
+    address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
 
-    using SafeERC20 for IERC20;
-
-    // Mappings to record the quantities involved in the claim application process,required for the Dapp.
+    // Mappings to record the quantities involved in the claim application process, required for the Dapp.
     mapping(address => uint256) public totalERC20Migrated;
     mapping(address => uint256) public totalERC721Migrated;
 
@@ -31,13 +39,15 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
         nft = _nft;
     }
 
-    // Function to migrate ERC20 tokens.
-    function migrateTokens(uint256 amount) external payable {
-        address vault = address(this);
+    using SafeERC20 for IERC20;
 
+    // Function to migrate ERC20 tokens.
+    function migrateTokens(uint256 amount) external {
         if (saleState != 1) {
             revert MigrationClosed();
         }
+        address vault = address(this);
+
         assembly {
             // Load caller address and totalERC20Migrated storage slot into memory.
             mstore(0x0, caller())
@@ -72,12 +82,11 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
     }
 
     // Function to migrate ERC721 tokens (NFTs).
-    function migrateNFTs(uint256[] calldata tokenIds) external payable {
-        address vault = address(this);
-
+    function migrateNFTs(uint256[] calldata tokenIds) external {
         if (saleState != 1) {
             revert MigrationClosed();
         }
+        address vault = address(this);
 
         assembly {
             // Load caller address and totalERC721Migrated storage slot into memory.
@@ -137,9 +146,6 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
 
     // Function to withdraw both Ethereum and ERC20 tokens from the contract.
     function withdrawTokens() external payable onlyOwner {
-        // Define the recipient address for withdrawn funds.
-        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
-        SafeTransferLib.safeTransferETH(receiver, address(this).balance);
         uint256 _uniqBalance = IERC20(uniqToken).balanceOf(address(this));
         SafeTransferLib.safeApprove(uniqToken, receiver, type(uint256).max);
         SafeTransferLib.safeTransfer(uniqToken, receiver, _uniqBalance);
@@ -147,9 +153,8 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
 
     // Function to withdraw ERC721 tokens (NFTs) from the contract.
     function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {
-        // Define the recipient address for the NFTs.
-        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
-        for (uint256 i = 0; i < tokenIds.length; i++) {
+        uint256 len = tokenIds.length; // cache >:D
+        for (uint256 i = 0; i < len; i++) {
             IERC721(nft).safeTransferFrom(address(this), receiver, tokenIds[i]);
         }
     }
