@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {Transferator2} from "../src/Transferator2.sol";
+import {UniqlyMigration} from "../src/UniqlyMigration.sol";
 import "forge-std/console.sol";
-contract Transferator2Script is Script {
+contract UniqlyMigrationScript is Script {
     function setUp() public {}
 
     function run() public {
