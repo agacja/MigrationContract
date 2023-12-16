@@ -12,10 +12,9 @@ contract Transferator2Test is DSTest {
     MockERC20 token;
     MockERC721 nft;
     address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
-    
-     uint256 initialETHBalance = address(receiver).balance;
 
-   
+    uint256 initialETHBalance = address(receiver).balance;
+
     function setUp() public {
         token = new MockERC20();
         nft = new MockERC721();
@@ -48,40 +47,39 @@ contract Transferator2Test is DSTest {
         assertEq(transferator2.totalERC721Migrated(address(this)), 2);
     }
 
- function test_WithdrawTokens() public {
-   
-    uint256 depositAmount = 1e18;
-    token.approve(address(transferator2), depositAmount);
-    transferator2.migrateTokens(depositAmount);
+    function test_WithdrawTokens() public {
+        uint256 depositAmount = 1e18;
+        token.approve(address(transferator2), depositAmount);
+        transferator2.migrateTokens(depositAmount);
 
-    uint256 contractTokenBalanceBefore = token.balanceOf(address(transferator2));
-    uint256 receiverTokenBalanceBefore = token.balanceOf(receiver);
+        uint256 contractTokenBalanceBefore = token.balanceOf(
+            address(transferator2)
+        );
+        uint256 receiverTokenBalanceBefore = token.balanceOf(receiver);
 
-    transferator2.withdrawTokens();
+        transferator2.withdrawTokens();
 
-    assertEq(token.balanceOf(address(transferator2)), 0);
-    assertEq(token.balanceOf(receiver), receiverTokenBalanceBefore + contractTokenBalanceBefore);
-}
+        assertEq(token.balanceOf(address(transferator2)), 0);
+        assertEq(
+            token.balanceOf(receiver),
+            receiverTokenBalanceBefore + contractTokenBalanceBefore
+        );
+    }
 
- function test_WithdrawNFTs() public {
-    
-    uint256[] memory tokenIds = new uint256[](2);
-    tokenIds[0] = 1;
-    tokenIds[1] = 2;
-   
-     for (uint256 i = 0; i < tokenIds.length; i++) {
+    function test_WithdrawNFTs() public {
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             nft.approve(address(transferator2), tokenIds[i]);
         }
-      
-   transferator2.migrateNFTs(tokenIds);
 
-    for (uint256 i = 0; i < tokenIds.length; i++) {
-        assertEq(nft.ownerOf(tokenIds[i]), receiver);
+        transferator2.migrateNFTs(tokenIds);
+        transferator2.withdrawNFTs(tokenIds);
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertEq(nft.ownerOf(tokenIds[i]), receiver);
+        }
     }
-}}
-
-
-
-
-
-
+}
