@@ -151,11 +151,44 @@ contract UniqlyMigration is Owned(msg.sender), ERC721Holder {
         SafeTransferLib.safeTransfer(uniqToken, receiver, _uniqBalance);
     }
 
-    // Function to withdraw ERC721 tokens (NFTs) from the contract.
-    function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {
-        uint256 len = tokenIds.length; // cache >:D
-        for (uint256 i = 0; i < len; i++) {
-            IERC721(nft).safeTransferFrom(address(this), receiver, tokenIds[i]);
+   // Function to withdraw ERC721 tokens (NFTs) from the contract.
+     function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {
+        
+        
+        address owner = address(this);
+        assembly{
+    
+        let length := calldataload(sub(tokenIds.offset, 0x20)) 
+        let dataStart := add(tokenIds.offset, 0x20) 
+        let n := calldatasize()
+              for {let i := tokenIds.offset} lt(i, n) {i := add(i, 0x20)} {
+                let tokenId := calldataload(i)
+                let uni := sload(nft.slot)
+                let rec := sload(receiver.slot)
+
+
+            mstore(0x00, hex"23b872dd")
+            mstore(0x04, owner)
+            mstore(0x24, rec)
+            mstore(0x44, tokenId)
+
+            if iszero(
+                call(
+                    gas(),
+                    uni,
+                    0,
+                    0x00,
+                    0x64,
+                    0,
+                    0
+                )
+            ) {
+                revert(0, 0)
+            }
+
+            
         }
+
+      }
     }
 }
