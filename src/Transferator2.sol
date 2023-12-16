@@ -28,6 +28,7 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
     using ECDSA for bytes32;
     using SafeERC20 for IERC20;
 
+    // Mappings to record the quantities involved in the claim application process,required for the Dapp.
     mapping(address => uint256) public totalERC20Migrated;
     mapping(address => uint256) public totalERC721Migrated;
 
