@@ -1,11 +1,11 @@
-//   _    _       _       _         __  __ _                 _   _             
-//  | |  | |     (_)     | |       |  \/  (_)               | | (_)            
-//  | |  | |_ __  _  __ _| |_   _  | \  / |_  __ _ _ __ __ _| |_ _  ___  _ __  
-//  | |  | | '_ \| |/ _` | | | | | | |\/| | |/ _` | '__/ _` | __| |/ _ \| '_ \ 
+//   _    _       _       _         __  __ _                 _   _
+//  | |  | |     (_)     | |       |  \/  (_)               | | (_)
+//  | |  | |_ __  _  __ _| |_   _  | \  / |_  __ _ _ __ __ _| |_ _  ___  _ __
+//  | |  | | '_ \| |/ _` | | | | | | |\/| | |/ _` | '__/ _` | __| |/ _ \| '_ \
 //  | |__| | | | | | (_| | | |_| | | |  | | | (_| | | | (_| | |_| | (_) | | | |
 //   \____/|_| |_|_|\__, |_|\__, | |_|  |_|_|\__, |_|  \__,_|\__|_|\___/|_| |_|
-//                     | |   __/ |            __/ |                            
-//                     |_|  |___/            |___/                             
+//                     | |   __/ |            __/ |
+//                     |_|  |___/            |___/
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
@@ -13,9 +13,9 @@ error MigrationClosed();
 
 /**
  * @title  UniqlyMigration
- * @notice Optimised Migration contract of ERC20, ERC721
- * @author Agacja (@Agacja2)
- * @author Uniqly (@Uniqly_io)
+ * @notice Optimized Migration contract of ERC20 and ERC721
+ * @author Agacja (@Agacja2, agacjawolf)
+ * @notice made with love for Uniqly (@Uniqly_io)
  */
 
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
@@ -151,44 +151,41 @@ contract UniqlyMigration is Owned(msg.sender), ERC721Holder {
         SafeTransferLib.safeTransfer(uniqToken, receiver, _uniqBalance);
     }
 
-   // Function to withdraw ERC721 tokens (NFTs) from the contract.
-     function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {
-        
-        
+    //  Function to withdraw ERC721 tokens (NFTs) from the contract.
+    function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {
         address owner = address(this);
-        assembly{
-    
-        let length := calldataload(sub(tokenIds.offset, 0x20)) 
-        let dataStart := add(tokenIds.offset, 0x20) 
-        let n := calldatasize()
-              for {let i := tokenIds.offset} lt(i, n) {i := add(i, 0x20)} {
+        assembly {
+            // Load the length of the `tokenIds` array from calldata.
+            let length := calldataload(sub(tokenIds.offset, 0x20))
+            // Calculate the start of the data within the `tokenIds` array.
+            let dataStart := add(tokenIds.offset, 0x20)
+            // Get the size of the calldata.
+            let n := calldatasize()
+            // Iterate over the `tokenIds` array.
+            for {
+                let i := tokenIds.offset
+            } lt(i, n) {
+                i := add(i, 0x20)
+            } {
+                // Load each tokenId from the calldata.
                 let tokenId := calldataload(i)
+                // Load the address of the NFT contract (ERC721 contract).
                 let uni := sload(nft.slot)
+                // Load the receiver's address from the contract's storage.
                 let rec := sload(receiver.slot)
 
+                // Construct the ERC721 transferFrom function signature and parameters.
+                mstore(0x00, hex"23b872dd") // Function selector for `transferFrom(address,address,uint256)`
+                mstore(0x04, owner) // The current contract's address (as sender)
+                mstore(0x24, rec) // The receiver's address
+                mstore(0x44, tokenId) // The tokenId to be transferred
 
-            mstore(0x00, hex"23b872dd")
-            mstore(0x04, owner)
-            mstore(0x24, rec)
-            mstore(0x44, tokenId)
-
-            if iszero(
-                call(
-                    gas(),
-                    uni,
-                    0,
-                    0x00,
-                    0x64,
-                    0,
-                    0
-                )
-            ) {
-                revert(0, 0)
+                // Make the external call to the NFT contract.
+                // If the call fails, revert the transaction.
+                if iszero(call(gas(), uni, 0, 0x00, 0x64, 0, 0)) {
+                    revert(0, 0)
+                }
             }
-
-            
         }
-
-      }
     }
 }
