@@ -1,4 +1,4 @@
-#Optimized  smart contract for transferring ERC20/ERC721 #
+#Optimized  smart contract for transferring ERC20/ERC721
 
 ## Contracts
 
