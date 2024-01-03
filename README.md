@@ -1,4 +1,5 @@
-# Optimized  smart contract for transferring ERC20/ERC721
+# Migration Contract
+### Optimized  smart contract for transferring ERC20/ERC721
 
 ## Contracts
 
