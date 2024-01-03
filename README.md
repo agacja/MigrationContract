@@ -5,7 +5,8 @@
 
 ```
 src
-    ├─ UniqlyMigration -> Bulk transfers written in inline assembly for ERC20, ERC721.Using mappings in order to track totalERC20Migrated, totalERC721Migrated on chain.
+    ├─ UniqlyMigration -> Bulk transfers written in inline assembly for ERC20, ERC721.
+Using mappings in order to track totalERC20Migrated, totalERC721Migrated on chain.
  ```
 
 ### Build
